@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Clock</title>
+
   <style>
     html, body {
       margin: 0;
@@ -13,34 +14,39 @@
     }
 
     :root {
-      --pink: #FF00B8;
+      --dark-pink: #ff00b8;
+      --light-pink: #ffd6f2;
     }
 
     .clock {
       width: 100%;
-      max-width: 220px;
-      margin: 10px auto;
-      padding: 10px 14px;
-      border-radius: 14px;
+      max-width: 480px;
+      margin: 14px auto;
+      padding: 22px 24px;
 
-      background: rgba(255, 0, 184, 0.08);
-      border: 1px solid rgba(255, 0, 184, 0.25);
-      box-shadow: 0 12px 30px rgba(255, 0, 184, 0.25);
+      border-radius: 22px;
+      background: var(--dark-pink);
+      box-shadow: 
+        0 20px 50px rgba(255, 0, 184, 0.45),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 
-      color: var(--pink);
       text-align: center;
-      font-weight: 800;
-      letter-spacing: 1px;
-      font-variant-numeric: tabular-nums;
     }
 
     .time {
-      font-size: 34px;
+      font-size: 64px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--light-pink);
+      font-variant-numeric: tabular-nums;
       line-height: 1;
-      text-shadow: 0 0 12px rgba(255, 0, 184, 0.35);
+      text-shadow:
+        0 0 12px rgba(255, 255, 255, 0.35),
+        0 0 24px rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
+
 <body>
 
   <div class="clock">
@@ -52,7 +58,6 @@
       const now = new Date();
       const h = String(now.getHours()).padStart(2, "0");
       const m = String(now.getMinutes()).padStart(2, "0");
-
       document.getElementById("time").textContent = `${h}:${m}`;
     }
 
@@ -62,4 +67,5 @@
 
 </body>
 </html>
+
 
