@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>75 Soft Progress</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    .widget {
+      width: 100%;
+      max-width: 520px;
+      margin: 12px auto;
+      padding: 14px;
+      border-radius: 18px;
+
+      background: rgba(255, 0, 184, 0.08);
+      border: 1px solid rgba(255, 0, 184, 0.25);
+      color: #ff00b8;
+
+      box-shadow: 0 18px 40px rgba(255, 0, 184, 0.25);
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .track {
+      margin-top: 12px;
+      height: 14px;
+      background: rgba(255, 0, 184, 0.2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff7ad9, #ff00b8);
+      border-radius: 999px;
+      transition: width 0.7s ease;
+      box-shadow: 0 0 12px rgba(255, 0, 184, 0.6);
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 11px;
+      color: rgba(255, 0, 184, 0.75);
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="widget">
+  <div class="top">
+    <div>75 Soft</div>
+    <div id="stat">Starts Jan 1</div>
+  </div>
+
+  <div class="track">
+    <div class="fill" id="fill"></div>
+  </div>
+
+  <div class="hint">One day at a time ✨</div>
+</div>
+
+<script>
+  const START_DATE = new Date("2026-01-01T00:00:00");
+  const TOTAL_DAYS = 75;
+
+  const today = new Date();
+  const msPerDay = 1000 * 60 * 60 * 24;
+
+  const diff = Math.floor((today - START_DATE) / msPerDay);
+  const day = Math.max(0, Math.min(TOTAL_DAYS, diff + 1));
+  const percent = (day / TOTAL_DAYS) * 100;
+
+  const fill = document.getElementById("fill");
+  const stat = document.getElementById("stat");
+
+  fill.style.width = percent + "%";
+
+  if (day === 0) {
+    stat.textContent = "Starts Jan 1";
+  } else {
+    stat.textContent = `Day ${day} / ${TOTAL_DAYS}`;
+  }
+</script>
+
+</body>
+</html>
