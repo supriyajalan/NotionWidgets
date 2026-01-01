@@ -1,172 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Minimal Calendar</title>
-  <style>
-    html, body{
-      margin:0;
-      padding:0;
-      background: transparent; /* NO background */
-      font-family: "Times New Roman", Times, Georgia, serif; /* SERIF */
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calendar</title>
 
-    :root{
-      --pink: #FF00B8;
-      --line: rgba(255, 0, 184, 0.55);
-      --line-soft: rgba(255, 0, 184, 0.28);
-    }
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-family: "Times New Roman", Times, serif;
+  }
 
-    .wrap{
-      width: min(720px, calc(100vw - 24px));
-      margin: 10px auto;
-      padding: 12px;
-      background: transparent; /* NO background */
-      border: 1px solid var(--line); /* pink border */
-      border-radius: 14px;
-      color: var(--pink);
-      box-sizing: border-box;
-    }
+  :root {
+    --pink: #ff00b8;
+    --line: rgba(255, 0, 184, 0.55);
+    --soft: rgba(255, 0, 184, 0.25);
+  }
 
-    .head{
-      display:flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 10px;
-      padding: 2px 4px 10px;
-    }
+  .frame {
+    width: 260px;
+    aspect-ratio: 1 / 1;
+    margin: 10px auto;
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    color: var(--pink);
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    perspective: 1200px;
+  }
 
-    .month{
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-    }
+  .content {
+    position: absolute;
+    inset: 0;
+    padding: 18px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+  }
 
-    .meta{
-      font-size: 12px;
-      font-weight: 600;
-      opacity: 0.9;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
+  .flip {
+    transform: rotateX(180deg);
+  }
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-    }
+  .header {
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 14px;
+    padding-bottom: 6px;
+  }
 
-    .dow{
-      text-align:center;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      padding: 6px 0;
-      border: 1px solid var(--line-soft);
-      border-radius: 10px;
-      color: var(--pink);
-      background: transparent; /* NO background */
-    }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
 
-    .cell{
-      height: 44px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border: 1px solid var(--line-soft);
-      border-radius: 12px;
-      background: transparent; /* NO background */
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--pink);
-      font-variant-numeric: tabular-nums;
-      box-sizing: border-box;
-    }
+  .dow, .day {
+    text-align: center;
+    font-size: 12px;
+  }
 
-    .cell.muted{
-      opacity: 0.35; /* still pink, just lighter */
-    }
+  .dow {
+    font-weight: 700;
+    opacity: 0.9;
+  }
 
-    .cell.today{
-      border-color: var(--line);
-    }
+  .day {
+    border: 1px solid var(--soft);
+    border-radius: 10px;
+    padding: 6px 0;
+    font-weight: 700;
+  }
 
-    @media (max-width: 520px){
-      .cell{ height: 40px; }
-      .month{ font-size: 14px; }
-    }
-  </style>
+  .muted {
+    opacity: 0.35;
+  }
+
+  .today {
+    border-color: var(--pink);
+  }
+</style>
 </head>
 
 <body>
-  <div class="wrap" aria-label="Monthly calendar">
-    <div class="head">
-      <div class="month" id="monthLabel">—</div>
-      <div class="meta" id="metaLabel">—</div>
+  <div class="frame">
+    <div class="content" id="card">
+      <div class="header" id="header">—</div>
+      <div class="grid" id="grid"></div>
     </div>
-
-    <div class="grid" id="grid"></div>
   </div>
 
-  <script>
-    // Monday-first
-    const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+<script>
+  const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  let lastRendered = "";
 
-    const pad2 = (n) => String(n).padStart(2, "0");
+  function getKSTDate() {
+    const now = new Date();
+    return new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+    );
+  }
 
-    function startOfDay(d){
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0,0,0,0);
-    }
+  function renderCalendar() {
+    const now = getKSTDate();
+    const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
 
-    function render(){
-      const now = new Date();
-      const today = startOfDay(now);
+    if (key === lastRendered) return;
+    lastRendered = key;
 
+    const card = document.getElementById("card");
+    card.classList.add("flip");
+
+    setTimeout(() => {
       const y = now.getFullYear();
-      const m = now.getMonth(); // 0-based
+      const m = now.getMonth();
+      const today = now.getDate();
 
-      // Header
-      const monthName = now.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-      document.getElementById("monthLabel").textContent = monthName.toUpperCase();
-      document.getElementById("metaLabel").textContent =
-        `${y}-${pad2(m+1)}-${pad2(now.getDate())}`;
+      document.getElementById("header").textContent =
+        now.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric"
+        }).toUpperCase();
 
       const grid = document.getElementById("grid");
       grid.innerHTML = "";
 
-      // DOW row
-      for (const d of DOW){
+      // Week headers
+      for (const d of DOW) {
         const el = document.createElement("div");
         el.className = "dow";
         el.textContent = d;
         grid.appendChild(el);
       }
 
-      const monthStart = new Date(y, m, 1);
-      const jsDow = monthStart.getDay();         // Sun=0..Sat=6
-      const mondayIndex = (jsDow + 6) % 7;       // Mon=0..Sun=6
-      const firstCell = new Date(y, m, 1 - mondayIndex);
+      const start = new Date(y, m, 1);
+      const offset = (start.getDay() + 6) % 7;
+      const first = new Date(y, m, 1 - offset);
 
-      // 6-week stable grid (42 days)
-      for (let i = 0; i < 42; i++){
-        const d = new Date(firstCell.getFullYear(), firstCell.getMonth(), firstCell.getDate() + i);
+      for (let i = 0; i < 42; i++) {
+        const d = new Date(first);
+        d.setDate(first.getDate() + i);
+
         const cell = document.createElement("div");
-        cell.className = "cell";
+        cell.className = "day";
 
         if (d.getMonth() !== m) cell.classList.add("muted");
-        if (+startOfDay(d) === +today) cell.classList.add("today");
+        if (d.getDate() === today && d.getMonth() === m) {
+          cell.classList.add("today");
+        }
 
         cell.textContent = d.getDate();
         grid.appendChild(cell);
       }
-    }
 
-    render();
-    // Update hourly (covers day/month change)
-    setInterval(render, 60 * 60 * 1000);
-  </script>
+      card.classList.remove("flip");
+    }, 300);
+  }
+
+  renderCalendar();
+  setInterval(renderCalendar, 60 * 1000); // checks every minute
+</script>
 </body>
 </html>
+
