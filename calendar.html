@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Calendar</title>
+<title>Mini Calendar</title>
 
 <style>
   html, body {
@@ -15,31 +15,31 @@
 
   :root {
     --pink: #ff00b8;
-    --line: rgba(255, 0, 184, 0.55);
+    --line: rgba(255, 0, 184, 0.5);
     --soft: rgba(255, 0, 184, 0.25);
   }
 
   .frame {
-    width: 260px;
+    width: 200px;
     aspect-ratio: 1 / 1;
-    margin: 10px auto;
-    border: 1.5px solid var(--line);
-    border-radius: 16px;
+    margin: 6px auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
     color: var(--pink);
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    perspective: 1200px;
+    perspective: 800px;
   }
 
   .content {
     position: absolute;
     inset: 0;
-    padding: 18px;
+    padding: 10px;
     display: grid;
     grid-template-rows: auto 1fr;
     transform-style: preserve-3d;
-    transition: transform 0.6s ease;
+    transition: transform 0.5s ease;
   }
 
   .flip {
@@ -49,31 +49,31 @@
   .header {
     text-align: center;
     font-weight: 700;
-    letter-spacing: 1px;
-    font-size: 14px;
-    padding-bottom: 6px;
+    letter-spacing: 0.4px;
+    font-size: 12px;
+    margin-bottom: 6px;
   }
 
   .grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 4px;
   }
 
   .dow, .day {
     text-align: center;
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .dow {
     font-weight: 700;
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   .day {
     border: 1px solid var(--soft);
-    border-radius: 10px;
-    padding: 6px 0;
+    border-radius: 6px;
+    padding: 3px 0;
     font-weight: 700;
   }
 
@@ -96,75 +96,38 @@
   </div>
 
 <script>
-  const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  let lastRendered = "";
+  const DOW = ["M","T","W","T","F","S","S"];
+  let lastKey = "";
 
-  function getKSTDate() {
-    const now = new Date();
+  function getKST() {
     return new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })
     );
   }
 
-  function renderCalendar() {
-    const now = getKSTDate();
+  function render() {
+    const now = getKST();
     const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    if (key === lastKey) return;
+    lastKey = key;
 
-    if (key === lastRendered) return;
-    lastRendered = key;
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const today = now.getDate();
 
     const card = document.getElementById("card");
     card.classList.add("flip");
 
     setTimeout(() => {
-      const y = now.getFullYear();
-      const m = now.getMonth();
-      const today = now.getDate();
-
       document.getElementById("header").textContent =
         now.toLocaleDateString("en-US", {
-          month: "long",
+          month: "short",
           year: "numeric"
         }).toUpperCase();
 
       const grid = document.getElementById("grid");
       grid.innerHTML = "";
 
-      // Week headers
       for (const d of DOW) {
-        const el = document.createElement("div");
-        el.className = "dow";
-        el.textContent = d;
-        grid.appendChild(el);
-      }
-
-      const start = new Date(y, m, 1);
-      const offset = (start.getDay() + 6) % 7;
-      const first = new Date(y, m, 1 - offset);
-
-      for (let i = 0; i < 42; i++) {
-        const d = new Date(first);
-        d.setDate(first.getDate() + i);
-
-        const cell = document.createElement("div");
-        cell.className = "day";
-
-        if (d.getMonth() !== m) cell.classList.add("muted");
-        if (d.getDate() === today && d.getMonth() === m) {
-          cell.classList.add("today");
-        }
-
-        cell.textContent = d.getDate();
-        grid.appendChild(cell);
-      }
-
-      card.classList.remove("flip");
-    }, 300);
-  }
-
-  renderCalendar();
-  setInterval(renderCalendar, 60 * 1000); // checks every minute
-</script>
-</body>
-</html>
+        const el = document.createE
 
